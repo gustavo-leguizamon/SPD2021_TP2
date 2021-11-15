@@ -9,15 +9,20 @@
 #define LCD_DB5    5
 #define LCD_DB6    6
 #define LCD_DB7    7
-/*
+
 #define BUTTON_UP   10
 #define BUTTON_DOWN 8
 #define BUTTON_TEST 9
-*/
+
 
 #define AMOUNT_WORDS 5
 
+//void antiBounces(int pinButton, int* stateBefore, void (*fun)());
+
 LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
+int stateButtonUpBefore = LOW;
+
+char currentLetter = 'A';
 
 char hiddenWords[AMOUNT_WORDS][20] = {
   "GUSTAVO",
@@ -32,17 +37,41 @@ void setup()
 {
   Serial.begin(9600);
   lcd.begin(16, 2);
+
+  pinMode(BUTTON_UP, INPUT);
+  pinMode(BUTTON_DOWN, INPUT);
+  pinMode(BUTTON_TEST, INPUT);
+
+  //COLOCA UNA SEMILLA ALEATORIA
+  randomSeed(millis());
+
   startGame();
 }
 
 void loop()
 {
+  /*
+  //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
+  int stateButtonUpNow = digitalRead(BUTTON_UP);
+  if (stateButtonUpNow == HIGH && stateButtonUpBefore == LOW)
+  {
+    incrementLetter();
+    printCurrentLetter();
+  }
+  stateButtonUpBefore = stateButtonUpNow;  //Actualiza el estado del boton
+  */
+
+  //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
+  //antiBounces(BUTTON_UP, &stateButtonUpBefore);
+  if (buttonWasPressed(BUTTON_UP, &stateButtonUpBefore)){
+    incrementLetter();
+  }
+  printCurrentLetter();
 }
 
 //INICIA EL JUEGO
 void startGame(){
-  lcd.setCursor(6, 0);
-  lcd.print("A");
+  printCurrentLetter();
 
   lcd.setCursor(12, 0);
   lcd.print(":");
@@ -76,4 +105,41 @@ void drawHiddenWord(char word[]){
 //SELECCIONA UNA PALABRA ALEATORIA DEL ARRAY DE PALABRAS MEDIANTE SU POSICION
 int selectRandomWord(){
   return random(0, AMOUNT_WORDS);
+}
+
+//Muestra en ell display la letra actual para probar
+void printCurrentLetter(){
+  lcd.setCursor(6, 0);
+  lcd.print(currentLetter);
+}
+
+//Incrementa la letra actual
+void incrementLetter(){
+  if (currentLetter >= 'Z'){ //Z
+    currentLetter = 'A';
+  }
+  else{
+    currentLetter += 1;
+  }
+}
+
+//Revisa si un boton ya se encuentra presionado
+/*
+void antiBounces(int pinButton, int* stateBefore, void (*fun)()){
+  int stateButtonUpNow = digitalRead(pinButton);
+  if (stateButtonUpNow == HIGH && *stateBefore == LOW){
+    //incrementLetter();
+    fun();
+    printCurrentLetter();
+  }
+  *stateBefore = stateButtonUpNow;  //Actualiza el estado del boton
+}
+*/
+int buttonWasPressed(int pinButton, int* stateBefore){
+  int stateButtonUpNow = digitalRead(pinButton);
+  Serial.println(stateButtonUpNow == HIGH && *stateBefore == LOW);
+  int wasPressed = stateButtonUpNow == HIGH && *stateBefore == LOW;
+  *stateBefore = stateButtonUpNow;  //Actualiza el estado del boton
+
+  return wasPressed;
 }
