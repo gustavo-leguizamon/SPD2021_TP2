@@ -63,7 +63,7 @@ void loop()
 
   //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
   //antiBounces(BUTTON_UP, &stateButtonUpBefore);
-  if (buttonWasPressed(BUTTON_UP, &stateButtonUpBefore)){
+  if (newButtonPress(BUTTON_UP, &stateButtonUpBefore)){
     incrementLetter();
   }
   printCurrentLetter();
@@ -135,9 +135,10 @@ void antiBounces(int pinButton, int* stateBefore, void (*fun)()){
   *stateBefore = stateButtonUpNow;  //Actualiza el estado del boton
 }
 */
-int buttonWasPressed(int pinButton, int* stateBefore){
+//Revisa si se presiono un boton y si el mismo ya se encuentra presionado de antes
+int newButtonPress(int pinButton, int* stateBefore){
   int stateButtonUpNow = digitalRead(pinButton);
-  Serial.println(stateButtonUpNow == HIGH && *stateBefore == LOW);
+  //Serial.println(stateButtonUpNow == HIGH && *stateBefore == LOW);
   int wasPressed = stateButtonUpNow == HIGH && *stateBefore == LOW;
   *stateBefore = stateButtonUpNow;  //Actualiza el estado del boton
 
