@@ -9,7 +9,11 @@
 #define LCD_DB5    5
 #define LCD_DB6    6
 #define LCD_DB7    7
-
+/*
+#define BUTTON_UP   10
+#define BUTTON_DOWN 8
+#define BUTTON_TEST 9
+*/
 LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
 
 void setup()
@@ -25,7 +29,10 @@ void loop()
 
 //INICIA EL JUEGO
 void startGame(){
-  lcd.setCursor(13, 0);
+  lcd.setCursor(6, 0);
+  lcd.print("A");
+
+  lcd.setCursor(12, 0);
   lcd.print(":");
 
   drawLives();
@@ -34,7 +41,7 @@ void startGame(){
 //DIBUJA TODAS LAS VIDAS DEL JUGADOR
 void drawLives(){
   for (int i = 0; i < 3; i++){
-    lcd.setCursor(14 + i, 0);
+    lcd.setCursor(13 + i, 0);
     lcd.print("*");
   }
 }
