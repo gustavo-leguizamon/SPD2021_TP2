@@ -1,6 +1,7 @@
 // C++ code
 //
 #include <LiquidCrystal.h>
+#include <string.h>
 
 //CONFIG LCD - INDICA PINES UTILIZADOS
 #define LCD_RS     2
@@ -17,7 +18,7 @@
 
 #define AMOUNT_WORDS 5
 
-//void antiBounces(int pinButton, int* stateBefore, void (*fun)());
+void antiBounces(int pinButton, int* stateBefore, void (*callback)());
 
 LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
 int stateButtonUpBefore = LOW;
@@ -42,8 +43,8 @@ void setup()
   pinMode(BUTTON_DOWN, INPUT);
   pinMode(BUTTON_TEST, INPUT);
 
-  //COLOCA UNA SEMILLA ALEATORIA
-  randomSeed(millis());
+  //Coloca una semilla aleatoria leyendo el ruido del pin A0 conectado al aire
+  randomSeed(analogRead(A0));
 
   startGame();
 }
@@ -55,21 +56,23 @@ void loop()
   int stateButtonUpNow = digitalRead(BUTTON_UP);
   if (stateButtonUpNow == HIGH && stateButtonUpBefore == LOW)
   {
-    incrementLetter();
+    nextLetter();
     printCurrentLetter();
   }
   stateButtonUpBefore = stateButtonUpNow;  //Actualiza el estado del boton
   */
 
   //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
-  //antiBounces(BUTTON_UP, &stateButtonUpBefore);
+  antiBounces(BUTTON_UP, &stateButtonUpBefore, nextLetter);
+  /*
   if (newButtonPress(BUTTON_UP, &stateButtonUpBefore)){
-    incrementLetter();
+    nextLetter();
   }
+  */
   printCurrentLetter();
 }
 
-//INICIA EL JUEGO
+//Inicia el juego configurando valores por defecto
 void startGame(){
   printCurrentLetter();
 
@@ -78,12 +81,12 @@ void startGame(){
 
   drawLives();
 
-  int word = selectRandomWord();
+  //int word = selectPosRandomWord();
   //Serial.println(word);
-  drawHiddenWord(hiddenWords[word]);
+  drawHiddenWord(hiddenWords[selectPosRandomWord()]);
 }
 
-//DIBUJA TODAS LAS VIDAS DEL JUGADOR
+//Dibuja todas las vidas del juagador
 void drawLives(){
   for (int i = 0; i < 3; i++){
     lcd.setCursor(13 + i, 0);
@@ -91,7 +94,7 @@ void drawLives(){
   }
 }
 
-//DIBUJA LOS CARACTERES CORRESPONDIENTES A LA PALABRA OCULTA
+//Dibuja los caracteres correspondientes a la palabra oculta
 void drawHiddenWord(char word[]){
   //Serial.println(word);
   int wordLength = strlen(word);
@@ -102,40 +105,41 @@ void drawHiddenWord(char word[]){
   }
 }
 
-//SELECCIONA UNA PALABRA ALEATORIA DEL ARRAY DE PALABRAS MEDIANTE SU POSICION
-int selectRandomWord(){
+//Selecciona una palabra aleatoria del array de palabras mediante su posicion
+int selectPosRandomWord(){
   return random(0, AMOUNT_WORDS);
 }
 
-//Muestra en ell display la letra actual para probar
+//Muestra en el display la letra actual para probar
 void printCurrentLetter(){
   lcd.setCursor(6, 0);
   lcd.print(currentLetter);
 }
 
-//Incrementa la letra actual
-void incrementLetter(){
-  if (currentLetter >= 'Z'){ //Z
+//Mueve la letra actual a la siguiente en el diccionario
+//Si se llega a la Z reinicia a la letra A
+void nextLetter(){
+  if (currentLetter >= 'Z'){
     currentLetter = 'A';
   }
   else{
-    currentLetter += 1;
+    currentLetter++;
   }
 }
 
 //Revisa si un boton ya se encuentra presionado
-/*
-void antiBounces(int pinButton, int* stateBefore, void (*fun)()){
+//Si esta presionado de antes no hace nada, si no lo esta ejecuta la funcion pasada como callback
+//Esto para lograr el efecto antirebote
+void antiBounces(int pinButton, int* stateBefore, void (*callback)()){
   int stateButtonUpNow = digitalRead(pinButton);
   if (stateButtonUpNow == HIGH && *stateBefore == LOW){
-    //incrementLetter();
-    fun();
-    printCurrentLetter();
+    callback();
   }
   *stateBefore = stateButtonUpNow;  //Actualiza el estado del boton
 }
-*/
-//Revisa si se presiono un boton y si el mismo ya se encuentra presionado de antes
+
+//Indica si se presiono un boton y si el mismo ya se encuentra presionado de antes para lograr efecto antirebote.
+//Si se presiono, y es la premera vez, retorna 1. Si se presiono, pero ya estaba presionado, retona 0.
 int newButtonPress(int pinButton, int* stateBefore){
   int stateButtonUpNow = digitalRead(pinButton);
   //Serial.println(stateButtonUpNow == HIGH && *stateBefore == LOW);
