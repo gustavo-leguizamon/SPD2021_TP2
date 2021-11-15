@@ -14,17 +14,29 @@
 #define BUTTON_DOWN 8
 #define BUTTON_TEST 9
 */
+
+#define AMOUNT_WORDS 5
+
 LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
+
+char hiddenWords[AMOUNT_WORDS][20] = {
+  "GUSTAVO",
+  "AILEN",
+  //"HOLA MIGUEL",
+  "PERRO",
+  "CEREBRON",
+  "CUCA"
+};
 
 void setup()
 {
+  Serial.begin(9600);
   lcd.begin(16, 2);
-  lcd.print("Hola");
+  startGame();
 }
 
 void loop()
 {
-  startGame();
 }
 
 //INICIA EL JUEGO
@@ -36,6 +48,10 @@ void startGame(){
   lcd.print(":");
 
   drawLives();
+
+  int word = selectRandomWord();
+  //Serial.println(word);
+  drawHiddenWord(hiddenWords[word]);
 }
 
 //DIBUJA TODAS LAS VIDAS DEL JUGADOR
@@ -44,4 +60,20 @@ void drawLives(){
     lcd.setCursor(13 + i, 0);
     lcd.print("*");
   }
+}
+
+//DIBUJA LOS CARACTERES CORRESPONDIENTES A LA PALABRA OCULTA
+void drawHiddenWord(char word[]){
+  //Serial.println(word);
+  int wordLength = strlen(word);
+  int posStart = (int)((16 - wordLength) / 2);
+  for (int i = 0; i < wordLength; i++){
+    lcd.setCursor(posStart + i, 1);
+    lcd.print("_");
+  }
+}
+
+//SELECCIONA UNA PALABRA ALEATORIA DEL ARRAY DE PALABRAS MEDIANTE SU POSICION
+int selectRandomWord(){
+  return random(0, AMOUNT_WORDS);
 }
