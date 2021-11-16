@@ -25,6 +25,7 @@ LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
 int stateButtonUpBefore = LOW;
 
 char currentLetter = 'A';
+int posSelectedWord;
 
 char hiddenWords[AMOUNT_WORDS][20] = {
   "GUSTAVO",
@@ -76,12 +77,13 @@ void loop()
 //Inicia el juego configurando valores por defecto
 void startGame(){
   printCurrentLetter();
+  setPosRandomWord();
 
   drawLives(TOTAL_LIVES);
 
-  //int word = selectPosRandomWord();
+  //int word = setPosRandomWord();
   //Serial.println(word);
-  drawHiddenWord(hiddenWords[selectPosRandomWord()]);
+  drawHiddenWord(hiddenWords[posSelectedWord]);
 }
 
 //Dibuja todas las vidas del jugador, maximo 6
@@ -113,8 +115,8 @@ void drawHiddenWord(char word[]){
 }
 
 //Selecciona una palabra aleatoria del array de palabras mediante su posicion
-int selectPosRandomWord(){
-  return random(0, AMOUNT_WORDS);
+int setPosRandomWord(){
+  posSelectedWord = random(0, AMOUNT_WORDS);
 }
 
 //Muestra en el display la letra actual para probar
