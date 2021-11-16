@@ -17,6 +17,7 @@
 
 
 #define AMOUNT_WORDS 5
+#define TOTAL_LIVES  5
 
 void antiBounces(int pinButton, int* stateBefore, void (*callback)());
 
@@ -76,20 +77,26 @@ void loop()
 void startGame(){
   printCurrentLetter();
 
-  lcd.setCursor(12, 0);
-  lcd.print(":");
-
-  drawLives();
+  drawLives(TOTAL_LIVES);
 
   //int word = selectPosRandomWord();
   //Serial.println(word);
   drawHiddenWord(hiddenWords[selectPosRandomWord()]);
 }
 
-//Dibuja todas las vidas del juagador
-void drawLives(){
-  for (int i = 0; i < 3; i++){
-    lcd.setCursor(13 + i, 0);
+//Dibuja todas las vidas del jugador, maximo 6
+void drawLives(int total){
+  if (total > 6){
+    total = 6;
+  }
+  int posInit = 16 - total - 1;
+  lcd.setCursor(posInit, 0);
+  lcd.print(":");
+
+  posInit++;
+
+  for (int i = 0; i < total; i++){
+    lcd.setCursor(posInit + i, 0);
     lcd.print("*");
   }
 }
@@ -112,7 +119,9 @@ int selectPosRandomWord(){
 
 //Muestra en el display la letra actual para probar
 void printCurrentLetter(){
-  lcd.setCursor(6, 0);
+  int posLetter = 16 - TOTAL_LIVES * 2 - 2;
+
+  lcd.setCursor(posLetter, 0);
   lcd.print(currentLetter);
 }
 
