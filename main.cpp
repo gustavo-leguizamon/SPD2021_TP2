@@ -22,12 +22,18 @@
 void antiBounces(int pinButton, int* stateBefore, void (*callback)());
 
 LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
+
+//Variables para mantener el estado previo de los botones
 int stateButtonUpBefore = LOW;
 int stateButtonTestBefore = LOW;
 
-char currentLetter = 'A';
+char currentLetter;
 int posSelectedWord;
+int flagRebootGame;
 
+unsigned long previousMillis = 0;
+
+//Palabras para usar en el juego
 char hiddenWords[AMOUNT_WORDS][20] = {
   "GUSTAVO",
   "AILEN",
@@ -54,39 +60,46 @@ void setup()
 
 void loop()
 {
-  /*
-  //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
-  int stateButtonUpNow = digitalRead(BUTTON_UP);
-  if (stateButtonUpNow == HIGH && stateButtonUpBefore == LOW)
-  {
-    nextLetter();
+  if (flagRebootGame){
+    if (secondsPassed(3)){
+      startGame();
+    }
+  }
+  else{
+    /*
+    //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
+    int stateButtonUpNow = digitalRead(BUTTON_UP);
+    if (stateButtonUpNow == HIGH && stateButtonUpBefore == LOW)
+    {
+      nextLetter();
+      printCurrentLetter();
+    }
+    stateButtonUpBefore = stateButtonUpNow;  //Actualiza el estado del boton
+    */
+
+    //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
+    antiBounces(BUTTON_UP, &stateButtonUpBefore, nextLetter);
+
+    //Si presiona el boton PROBAR LETRA, revisa si se encuentra previamente presionado
+    antiBounces(BUTTON_TEST, &stateButtonTestBefore, testLetter);
+    /*
+    if (newButtonPress(BUTTON_UP, &stateButtonUpBefore)){
+      nextLetter();
+    }
+    */
     printCurrentLetter();
   }
-  stateButtonUpBefore = stateButtonUpNow;  //Actualiza el estado del boton
-  */
-
-  //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
-  antiBounces(BUTTON_UP, &stateButtonUpBefore, nextLetter);
-
-  //Si presiona el boton PROBAR LETRA, revisa si se encuentra previamente presionado
-  antiBounces(BUTTON_TEST, &stateButtonTestBefore, testLetter);
-  /*
-  if (newButtonPress(BUTTON_UP, &stateButtonUpBefore)){
-    nextLetter();
-  }
-  */
-  printCurrentLetter();
 }
 
 //Inicia el juego configurando valores por defecto
 void startGame(){
+  flagRebootGame = 0;
+  currentLetter = 'A';  //Inicializa en la letra A
   printCurrentLetter();
   setPosRandomWord();
 
   drawLives(TOTAL_LIVES);
 
-  //int word = setPosRandomWord();
-  //Serial.println(word);
   drawHiddenWord(hiddenWords[posSelectedWord]);
 }
 
@@ -94,6 +107,9 @@ void startGame(){
 void drawLives(int total){
   if (total > 6){
     total = 6;
+  }
+  else if (total < 1){
+    total = 1;
   }
   int posInit = 16 - total - 1;
   lcd.setCursor(posInit, 0);
@@ -109,7 +125,6 @@ void drawLives(int total){
 
 //Dibuja los caracteres correspondientes a la palabra oculta
 void drawHiddenWord(char word[]){
-  //Serial.println(word);
   int wordLength = strlen(word);
   int posLcd = (int)((16 - wordLength) / 2); // //Posicion inicial de la palabra en el lcd
   for (int i = 0; i < wordLength; i++){
@@ -118,12 +133,13 @@ void drawHiddenWord(char word[]){
   }
 }
 
+//Delegado encargado de probar la letra seleccionada
 void testLetter(){
-  drawMatchLetter(hiddenWords[posSelectedWord]);
+  drawMatchingLetters(hiddenWords[posSelectedWord]);
 }
 
-void drawMatchLetter(char word[]){
-  //Serial.println(word);
+//Dibuja las letras de la palabra que coincidan con la letra seleccionada para probar
+void drawMatchingLetters(char word[]){
   int wordLength = strlen(word);
   int posLcd = (int)((16 - wordLength) / 2); //Posicion inicial de la palabra en el lcd
   for (int i = 0; i < wordLength; i++){
@@ -179,4 +195,23 @@ int newButtonPress(int pinButton, int* stateBefore){
   *stateBefore = stateButtonUpNow;  //Actualiza el estado del boton
 
   return wasPressed;
+}
+
+
+//Indica si pasaron la cantidad de segundos indicada en el parametro
+int secondsPassed(int seconds){
+  int passed = 0;
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= 1000 * seconds){
+    previousMillis = currentMillis;
+    passed = 1;
+  }
+  return passed;
+}
+
+
+//Marca el juego para reiniciar
+void rebootGame(){
+  flagRebootGame = 1;
+  previousMillis = millis();
 }
