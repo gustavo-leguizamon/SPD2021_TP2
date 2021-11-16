@@ -23,6 +23,7 @@ void antiBounces(int pinButton, int* stateBefore, void (*callback)());
 
 LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
 int stateButtonUpBefore = LOW;
+int stateButtonTestBefore = LOW;
 
 char currentLetter = 'A';
 int posSelectedWord;
@@ -66,6 +67,9 @@ void loop()
 
   //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
   antiBounces(BUTTON_UP, &stateButtonUpBefore, nextLetter);
+
+  //Si presiona el boton PROBAR LETRA, revisa si se encuentra previamente presionado
+  antiBounces(BUTTON_TEST, &stateButtonTestBefore, testLetter);
   /*
   if (newButtonPress(BUTTON_UP, &stateButtonUpBefore)){
     nextLetter();
@@ -107,10 +111,27 @@ void drawLives(int total){
 void drawHiddenWord(char word[]){
   //Serial.println(word);
   int wordLength = strlen(word);
-  int posStart = (int)((16 - wordLength) / 2);
+  int posLcd = (int)((16 - wordLength) / 2); // //Posicion inicial de la palabra en el lcd
   for (int i = 0; i < wordLength; i++){
-    lcd.setCursor(posStart + i, 1);
+    lcd.setCursor(posLcd + i, 1);
     lcd.print("_");
+  }
+}
+
+void testLetter(){
+  drawMatchLetter(hiddenWords[posSelectedWord]);
+}
+
+void drawMatchLetter(char word[]){
+  //Serial.println(word);
+  int wordLength = strlen(word);
+  int posLcd = (int)((16 - wordLength) / 2); //Posicion inicial de la palabra en el lcd
+  for (int i = 0; i < wordLength; i++){
+    if (word[i] == currentLetter){
+      lcd.setCursor(posLcd, 1);
+      lcd.print(currentLetter);      
+    }
+    posLcd++;
   }
 }
 
