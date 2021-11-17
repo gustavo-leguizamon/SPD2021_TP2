@@ -16,8 +16,9 @@
 #define BUTTON_TEST 9
 
 
-#define AMOUNT_WORDS 5
-#define TOTAL_LIVES  5
+#define AMOUNT_WORDS      5
+#define TOTAL_LIVES       5
+#define SECONDS_TO_REBOOT 3
 
 void antiBounces(int pinButton, int* stateBefore, void (*callback)());
 
@@ -61,7 +62,7 @@ void setup()
 void loop()
 {
   if (flagRebootGame){
-    if (secondsPassed(3)){
+    if (secondsPassed(SECONDS_TO_REBOOT)){
       startGame();
     }
   }
@@ -93,8 +94,11 @@ void loop()
 
 //Inicia el juego configurando valores por defecto
 void startGame(){
-  flagRebootGame = 0;
+  flagRebootGame = 0;   //Desactiva el flag de reinicio
   currentLetter = 'A';  //Inicializa en la letra A
+
+  lcd.clear(); //Limpia completo el display para dejarlo en blanco
+
   printCurrentLetter();
   setPosRandomWord();
 
