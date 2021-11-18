@@ -37,6 +37,7 @@ void antiBounces(int pinButton, int* stateBefore, void (*callback)());
 int newButtonPress(int pinButton, int* stateBefore);
 int secondsPassed(int seconds);
 void rebootGame();
+void cleanLine(int line);
 
 LiquidCrystal lcd(LCD_RS, LCD_ENABLE, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
 
@@ -89,21 +90,22 @@ void loop()
   }
   else{
     //Si presiona el boton SUBIR LETRA, revisa si se encuentra previamente presionado
-  	//Escucha si el boton esta apretado o no. Si esta apretado llama a nextLetter
+  	//Escucha si el boton esta apretado o no. Si no esta apretado llama a nextLetter
     antiBounces(BUTTON_UP, &stateButtonUpBefore, nextLetter);
 
     //Si presiona el boton PROBAR LETRA, revisa si se encuentra previamente presionado
-    //Escucha si el boton esta apretado o no. Si esta apretado llama a testLetter
+    //Escucha si el boton esta apretado o no. Si no esta apretado llama a testLetter
     antiBounces(BUTTON_TEST, &stateButtonTestBefore, testLetter);
     
     //Si presiona el boton BAJAR LETRA, revisa si se encuentra previamente presionad
-    //Escucha si el boton esta apretado o no. Si esta apretado llama a previousLetter
-    antiBounces(BUTTON_DOWN, &stateButtonDownBefore , previousLetter);
+    //Escucha si el boton esta apretado o no. Si no esta apretado llama a previousLetter
+    antiBounces(BUTTON_DOWN, &stateButtonDownBefore, previousLetter);
     
     printCurrentLetter();
     
     if(checkFinish() ==1){
     	//ganaste
+      cleanLine(1);
     	lcd.setCursor(4, 1);
     	lcd.print ("GANASTE");
     	rebootGame();
@@ -111,14 +113,12 @@ void loop()
     else{
     	if(checkFinish()== -1){
     		//perdiste
+        cleanLine(1);
     		lcd.setCursor(4, 1);
     		lcd.print ("PERDISTE");
-    		rebootGame();
-    		
+    		rebootGame();    		
     	}
-    }
-	
-    
+    }    
   }
 }
 
@@ -142,7 +142,8 @@ int checkFinish(){
 void startGame(){
   flagRebootGame = 0;   //Desactiva el flag de reinicio
   currentLetter = 'A';  //Inicializa en la letra A
-  lives = TOTAL_LIVES;
+  lives = TOTAL_LIVES;  //Resatura total de vidas
+  strcpy(auxWord, "");
 
   lcd.clear(); //Limpia completo el display para dejarlo en blanco
 
@@ -280,4 +281,11 @@ int secondsPassed(int seconds){
 void rebootGame(){
   flagRebootGame = 1;
   previousMillis = millis();
+}
+
+void cleanLine(int line){
+  lcd.setCursor(0, line);
+  for (int i = 0; i < 16; i++){
+    lcd.print(" ");
+  }
 }
